@@ -1,10 +1,12 @@
-﻿using RoR2;
+﻿using HG;
+using RoR2;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace RoRModNET4
 {
@@ -16,6 +18,8 @@ namespace RoRModNET4
         TeamManager _TeamManager;
         TeleporterInteraction _Teleporter;
         CharacterVars characterVars = new CharacterVars();
+        
+        NetworkWriter _Writer;
 
         //Toggles for menu
         bool maxFireRate = false;
@@ -40,7 +44,9 @@ namespace RoRModNET4
             string _infJumpLabel = $"> Inf Jump: {jumpCount}<";
             string _godModeLabel = $"Godmode: {godMode}";
 
-            Render.Begin("Risk of Tears", 4f, 1f, 180f, 600f, 10f, 20f, 2f);
+            
+
+            Render.Begin("Risk of Tears", 4f, 1f, 180f, 650f, 10f, 20f, 2f);
             //GUI.Box(new Rect(0f, 0f, 300f, 500f), godMode.ToString());
             if (Render.Button("Toggle Firerate")) { maxFireRate = true; }
             Render.Label(_godModeLabel);
@@ -63,16 +69,23 @@ namespace RoRModNET4
             if (Render.Button("Huntress")) { LocalPlayer.CallCmdRespawn("HuntressBody"); }
             if (Render.Button("Captain")) { LocalPlayer.CallCmdRespawn("CaptainBody"); }
             if (Render.Button("Loader")) { LocalPlayer.CallCmdRespawn("LoaderBody"); }
-            Render.Label("       > Lunar Coins <");
-            if (Render.Button("inf Lunar coin"))
+            Render.Label(">Coins / Exp <");
+            if (Render.Button("+10 Lunar coins"))
             {
-                _NetworkUser.CallCmdSetNetLunarCoins(9999999u);
+                foreach (NetworkUser netuser in GetAllNetworkPlayers())
+                {
+                    if (netuser.master == LocalPlayer)
+                    {
+                        netuser.CallRpcAwardLunarCoins(10);
+                    }
+                }
             }
-            Render.Label("       > Money <");
             if (Render.Button("+10k Money")) { LocalPlayer.GiveMoney(10000); }
-            if (Render.Button("Change Username"))
+            if (Render.Button("Pickup Cock")) { Broadcastpickup("Your juicy phat cock! <3", 1); }
+            Render.Label("> Team <");
+            if (Render.Button("Sacrifice team </3"))
             {
-                _NetworkUser.userName = " Phat coc <3 ";
+                SacrificeTeam();
             }
         }
         public void Start()
@@ -86,62 +99,63 @@ namespace RoRModNET4
         public void Update()
         {
             UpdateLocalPlayer();
+            
+            
+            _Body = LocalPlayer.GetBody();
             if (_Body)
             {
                 characterVars.baseSpeed = _Body.baseMoveSpeed;
+
+                if (maxFireRate == true)
+                {
+                    _Body.baseAttackSpeed = 50f;
+                }
+                if (godMode == true)
+                {
+                    _Body.healthComponent.godMode = true;
+                    _Body.healthComponent.health = 999999999999f;
+                }
+                else if (godMode == false)
+                {
+                    _Body.healthComponent.godMode = false;
+                }
+
+                //Character speed toggle up and down.
+                if (increaseSpeed == true)
+                {
+                    increaseSpeed = !increaseSpeed;
+                    _Body.baseMoveSpeed += 1f;
+                }
+                if (decreaseSpeed == true)
+                {
+                    decreaseSpeed = !decreaseSpeed;
+                    _Body.baseMoveSpeed -= 1f;
+                }
+
+                //Infinite jump toggle.
+                if (jumpCount == true)
+                {
+                    _Body.baseJumpCount = 99999;
+                }
+                else if (jumpCount == false)
+                {
+                    _Body.baseJumpCount = 1;
+                }
+
+                if (noSkillReload == true)
+                {
+                    _Body.skillLocator.primary.rechargeStopwatch = 0f;
+                    _Body.skillLocator.primary.stock = 999;
+                    _Body.skillLocator.secondary.rechargeStopwatch = 0f;
+                    _Body.skillLocator.secondary.stock = 999;
+                    _Body.skillLocator.utility.rechargeStopwatch = 0f;
+                    _Body.skillLocator.utility.stock = 999;
+                    _Body.skillLocator.special.rechargeStopwatch = 0f;
+                    _Body.skillLocator.special.stock = 999;
+                }
             }
             
             _NetworkUser = FindObjectOfType<NetworkUser>();
-            _Body = LocalPlayer.GetBody();
-
-            if (maxFireRate == true)
-            {
-                _Body.baseAttackSpeed = 50f;
-            }
-            if (godMode == true)
-            {
-                _Body.healthComponent.godMode = true;
-                _Body.healthComponent.health = 999999999999f;
-            }
-            else if (godMode == false)
-            {
-                _Body.healthComponent.godMode = false;
-            }
-
-            //Character speed toggle up and down.
-            if (increaseSpeed == true)
-            {
-                increaseSpeed = !increaseSpeed;
-                _Body.baseMoveSpeed += 1f;
-            }
-            if (decreaseSpeed == true)
-            {
-                decreaseSpeed = !decreaseSpeed;
-                _Body.baseMoveSpeed -= 1f;
-            }
-
-            //Infinite jump toggle.
-            if (jumpCount == true)
-            {
-                _Body.baseJumpCount = 99999;
-            }
-            else if (jumpCount == false)
-            {
-                _Body.baseJumpCount = 1;
-            }
-
-            if (noSkillReload == true)
-            {
-                _Body.skillLocator.primary.rechargeStopwatch = 0f;
-                _Body.skillLocator.primary.stock = 999;
-                _Body.skillLocator.secondary.rechargeStopwatch = 0f;
-                _Body.skillLocator.secondary.stock = 999;
-                _Body.skillLocator.utility.rechargeStopwatch = 0f;
-                _Body.skillLocator.utility.stock = 999;
-                _Body.skillLocator.special.rechargeStopwatch = 0f;
-                _Body.skillLocator.special.stock = 999;
-            }
-
         }
 
         public void UnlockAll()
@@ -164,6 +178,58 @@ namespace RoRModNET4
             }
         }
 
+        public NetworkUser[] GetAllNetworkPlayers()
+        {
+            int count = 0;
+            NetworkUser[] netUsers = new NetworkUser[10];
+            foreach(NetworkUser netuser in NetworkUser.FindObjectsOfType(typeof(NetworkUser)))
+            {
+                netUsers[count] = netuser;
+                count += 1;
+            }
+
+            return netUsers;
+        }
+
+        public void SacrificeTeam()
+        {
+            foreach (NetworkUser netuser in NetworkUser.FindObjectsOfType(typeof(NetworkUser)))
+            {
+                if (netuser)
+                {
+                    if(netuser.masterController.master == LocalPlayer)
+                    {
+                        continue;
+                    }
+                    netuser.GetCurrentBody().baseMaxHealth = 0f;
+                }
+            }
+        }
+
+        public void Broadcastpickup(string text, uint amount)
+        {
+            foreach (NetworkUser netuser in GetAllNetworkPlayers())
+            {
+                if (netuser.master == LocalPlayer)
+                {
+                    netuser.CallRpcAwardLunarCoins(10);
+                    //netuser.CallCmdReportAchievement("PHAT BALLS!");
+
+                    Chat.SendBroadcastChat(new Chat.PlayerPickupChatMessage
+                    {
+                        pickupColor = Color.red,
+                        pickupQuantity = amount,
+                        pickupToken = text,
+                        baseToken = "PLAYER_PICKUP",
+                        subjectAsCharacterBody = netuser.master.GetBody(),
+                        subjectAsNetworkUser = netuser
+
+                    });
+                }
+            }
+        }
+
+
         public static void UpdateLocalPlayer()
         {
             if (RoRMod.LocalPlayer != null)
@@ -171,17 +237,6 @@ namespace RoRModNET4
                 return;
             }
             LocalPlayer = LocalUserManager.GetFirstLocalUser().cachedMasterController.master;
-            /*for(int i = 0; i < LocalUserManager.readOnlyLocalUsersList.Count; i++) 
-            {
-                if (LocalUserManager.readOnlyLocalUsersList[i].currentNetworkUser != null 
-                    && LocalUserManager.readOnlyLocalUsersList[i].currentNetworkUser.isLocalPlayer 
-                    && LocalUserManager.readOnlyLocalUsersList[i].cachedMasterController != null 
-                    && LocalUserManager.readOnlyLocalUsersList[i].cachedMasterController.master != null)
-                {
-                    RoRMod.LocalPlayer = LocalUserManager.readOnlyLocalUsersList[i].cachedMasterController.master;
-                    break;
-                }
-            }*/
         }
     }
 }
