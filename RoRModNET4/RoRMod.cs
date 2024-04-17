@@ -72,7 +72,7 @@ namespace RoRModNET4
             if (Render.Button("+10k Money")) { LocalPlayer.GiveMoney(10000); }
             if (Render.Button("Change Username"))
             {
-                _NetworkUser.userName = "Phat coc <3";
+                _NetworkUser.userName = " Phat coc <3 ";
             }
         }
         public void Start()
