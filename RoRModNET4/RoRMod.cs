@@ -46,7 +46,7 @@ namespace RoRModNET4
 
             
 
-            Render.Begin("Risk of Tears", 4f, 1f, 180f, 650f, 10f, 20f, 2f);
+            Render.Begin("Risk of Tears 0.0.2", 4f, 1f, 180f, 650f, 10f, 20f, 2f);
             //GUI.Box(new Rect(0f, 0f, 300f, 500f), godMode.ToString());
             if (Render.Button("Toggle Firerate")) { maxFireRate = true; }
             Render.Label(_godModeLabel);
@@ -81,7 +81,7 @@ namespace RoRModNET4
                 }
             }
             if (Render.Button("+10k Money")) { LocalPlayer.GiveMoney(10000); }
-            if (Render.Button("Pickup Cock")) { Broadcastpickup("Your juicy phat cock! <3", 1); }
+            if (Render.Button("Pickup Cock")) { Broadcastpickup(1); }
             Render.Label("> Team <");
             if (Render.Button("Sacrifice team </3"))
             {
@@ -202,22 +202,28 @@ namespace RoRModNET4
                         continue;
                     }
                     netuser.GetCurrentBody().baseMaxHealth = 0f;
+                    netuser.GetCurrentBody().baseMaxShield = 0f;
+                    netuser.GetCurrentBody().baseJumpCount = 0;
                 }
             }
         }
 
-        public void Broadcastpickup(string text, uint amount)
+        public void Broadcastpickup(uint amount)
         {
+
+            var random = new System.Random();
+
+            string text = characterVars.pickupLines[random.Next(characterVars.pickupLines.Count())];
+            Color color = characterVars.colours[random.Next(characterVars.colours.Count())];
+
             foreach (NetworkUser netuser in GetAllNetworkPlayers())
             {
                 if (netuser.master == LocalPlayer)
                 {
                     netuser.CallRpcAwardLunarCoins(10);
-                    //netuser.CallCmdReportAchievement("PHAT BALLS!");
-
                     Chat.SendBroadcastChat(new Chat.PlayerPickupChatMessage
                     {
-                        pickupColor = Color.red,
+                        pickupColor = color,
                         pickupQuantity = amount,
                         pickupToken = text,
                         baseToken = "PLAYER_PICKUP",
