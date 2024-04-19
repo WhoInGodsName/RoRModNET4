@@ -33,6 +33,7 @@
   <ItemGroup>
     <Compile Include="CharacterVars.cs" />
     <Compile Include="Loader.cs" />
+    <Compile Include="PrefabDraw.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Render.cs" />
     <Compile Include="RoRMod.cs" />

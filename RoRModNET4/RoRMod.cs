@@ -51,7 +51,7 @@ namespace RoRModNET4
 
             
 
-            Render.Begin("Risk of Tears 0.0.3", 4f, 1f, 180f, 650f, 10f, 20f, 2f);
+            Render.Begin("Risk of Tears 0.0.3", 4f, 1f, 180f, 670f, 10f, 20f, 2f);
             //GUI.Box(new Rect(0f, 0f, 300f, 500f), godMode.ToString());
             if (Render.Button("Toggle Firerate")) { maxFireRate = true; }
             Render.Label(_godModeLabel);
@@ -94,7 +94,8 @@ namespace RoRModNET4
             }
             if (Render.Button("Spawn prefab"))
             {
-                Spawndick("JellyfishBody");
+                PrefabDraw draw = new PrefabDraw();
+                draw.Draw(_Body.GetComponent<Transform>().position, _Body.GetComponent<Transform>().rotation, "JellyfishBody");
             }
             if (Render.Button("Spawn prefab on team"))
             {
@@ -295,45 +296,6 @@ namespace RoRModNET4
                 GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, _Body.GetComponent<Transform>().rotation);
                 NetworkServer.Spawn(gameObject);
             }
-        }
-        public void Spawndick(string prefabString)
-        {
-            GameObject toSpawn = new GameObject();
-
-            Vector3 bodyTrans = Vector3.zero;
-            bodyTrans = _Body.GetComponent<Transform>().position;
-
-            toSpawn = BodyCatalog.FindBodyPrefab(prefabString);
-
-            bodyTrans.x -= 3;
-            GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, _Body.GetComponent<Transform>().rotation);
-            bodyTrans.y += 3;
-            gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, _Body.GetComponent<Transform>().rotation);
-            bodyTrans.x -= 3;
-            gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, _Body.GetComponent<Transform>().rotation);
-            bodyTrans.y -= 3;
-            gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, _Body.GetComponent<Transform>().rotation);
-
-            bodyTrans.x += 9;
-            gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, _Body.GetComponent<Transform>().rotation);
-            bodyTrans.y += 3;
-            gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, _Body.GetComponent<Transform>().rotation);
-            bodyTrans.x += 3;
-            gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, _Body.GetComponent<Transform>().rotation);
-            bodyTrans.y -= 3;
-            gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, _Body.GetComponent<Transform>().rotation);
-
-            bodyTrans.x -= 6f;
-            bodyTrans.y += 2;
-            for(int i = 0; i < 4; i++)
-            {
-                bodyTrans.y += 3;
-                gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, _Body.GetComponent<Transform>().rotation);
-            }
-
-
-            NetworkServer.Spawn(gameObject);
-
         }
 
         public static void UpdateLocalPlayer()
