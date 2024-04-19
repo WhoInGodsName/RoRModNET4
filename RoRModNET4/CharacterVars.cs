@@ -30,10 +30,19 @@ namespace RoRModNET4
             "Your juicy phat cock! <3",
             "A deadly disease",
             "Some dog shit I think?",
-            "You.  He is carrying the crap out of this team.",
+            "You. He is carrying the crap out of this team.",
             "A small pigeon",
             "That sexy ass ;)",
-            "Inconveniently oversized coconut"
+            "Inconveniently oversized coconut",
+            "Homeless mans pocket lint",
+            "Mysterious Soggy Sock",
+            "Straight up HEROIN",
+            "A smidgen of cocaine",
+            "Misplaced Condom Wrapper",
+            "Disco Ball of Shame",
+            "Lube-Soaked Feather Duster",
+            "Bootylicious Spanking Paddle"
+
         };
 
         public string[] bodyArray = new string[] {

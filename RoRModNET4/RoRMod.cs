@@ -7,6 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.Rendering;
+using UnityEngine.UIElements;
+using static RoR2.SpawnCard;
 
 namespace RoRModNET4
 {
@@ -37,16 +40,18 @@ namespace RoRModNET4
         string noReloadLabel = "> No Cooldown Timer <";
         bool noSkillReload = false;
 
+        bool spawnOnTeam = false;
+
 
         public void OnGUI()
         {
-            string _speedLabel = $"> Character Speed: {characterVars.baseSpeed.ToString()}<";
-            string _infJumpLabel = $"> Inf Jump: {jumpCount}<";
+            string _speedLabel = $"Character Speed: {characterVars.baseSpeed.ToString()}";
+            string _infJumpLabel = $"Inf Jump: {jumpCount}";
             string _godModeLabel = $"Godmode: {godMode}";
 
             
 
-            Render.Begin("Risk of Tears 0.0.2", 4f, 1f, 180f, 650f, 10f, 20f, 2f);
+            Render.Begin("Risk of Tears 0.0.3", 4f, 1f, 180f, 650f, 10f, 20f, 2f);
             //GUI.Box(new Rect(0f, 0f, 300f, 500f), godMode.ToString());
             if (Render.Button("Toggle Firerate")) { maxFireRate = true; }
             Render.Label(_godModeLabel);
@@ -58,9 +63,9 @@ namespace RoRModNET4
             if (Render.Button("Toggle Inf Jump")) { jumpCount = !jumpCount; }
             Render.Label(noReloadLabel);
             if (Render.Button("Toggle No Cooldown")) { noSkillReload = !noSkillReload; }
-            Render.Label("> Unlock All <");
+            Render.Label("Unlock All");
             if (Render.Button("Unlock")) { UnlockAll(); }
-            Render.Label("> Spawn Body <");
+            Render.Label("Spawn Body");
             if (Render.Button("LunarGolemBody")) { LocalPlayer.CallCmdRespawn("LunarGolemBody"); }
             if (Render.Button("MegaDroneBody")) { LocalPlayer.CallCmdRespawn("MegaDroneBody"); }
             if (Render.Button("GrandParentBody")) { LocalPlayer.CallCmdRespawn("GrandParentBody"); }
@@ -87,6 +92,14 @@ namespace RoRModNET4
             {
                 SacrificeTeam();
             }
+            if (Render.Button("Spawn prefab"))
+            {
+                Spawndick("JellyfishBody");
+            }
+            if (Render.Button("Spawn prefab on team"))
+            {
+                spawnOnTeam = !spawnOnTeam;
+            }
         }
         public void Start()
         {
@@ -99,7 +112,7 @@ namespace RoRModNET4
         public void Update()
         {
             UpdateLocalPlayer();
-            
+
             
             _Body = LocalPlayer.GetBody();
             if (_Body)
@@ -152,6 +165,10 @@ namespace RoRModNET4
                     _Body.skillLocator.utility.stock = 999;
                     _Body.skillLocator.special.rechargeStopwatch = 0f;
                     _Body.skillLocator.special.stock = 999;
+                }
+                if(spawnOnTeam == true)
+                {
+                    SpawnOnTeam("JellyfishBody");
                 }
             }
             
@@ -232,7 +249,7 @@ namespace RoRModNET4
             }
         }
 
-        public void TeamSac(NetworkUser netUser, GameObject killerOverride = null, GameObject inflictorOverride = null, DamageType damageType = DamageType.Generic)
+        public void TeamSac(NetworkUser netUser, GameObject killerOverride = null, GameObject inflictorOverride = null, DamageType damageType = DamageType.VoidDeath)
         {
             var healthComp = netUser.masterController.master.GetBody().healthComponent;
             if (healthComp.alive && !healthComp.godMode)
@@ -263,6 +280,61 @@ namespace RoRModNET4
             }
         }
 
+        public void SpawnOnTeam(string prefabString)
+        {
+            GameObject toSpawn = new GameObject();
+            toSpawn = BodyCatalog.FindBodyPrefab(prefabString);
+            foreach (NetworkUser netuser in NetworkUser.FindObjectsOfType(typeof(NetworkUser)))
+            {
+                if (netuser.masterController.master == LocalPlayer)
+                {
+                    continue;
+                }
+                Vector3 bodyTrans = Vector3.zero;
+                bodyTrans = netuser.GetCurrentBody().GetComponent<Transform>().position;
+                GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, _Body.GetComponent<Transform>().rotation);
+                NetworkServer.Spawn(gameObject);
+            }
+        }
+        public void Spawndick(string prefabString)
+        {
+            GameObject toSpawn = new GameObject();
+
+            Vector3 bodyTrans = Vector3.zero;
+            bodyTrans = _Body.GetComponent<Transform>().position;
+
+            toSpawn = BodyCatalog.FindBodyPrefab(prefabString);
+
+            bodyTrans.x -= 3;
+            GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, _Body.GetComponent<Transform>().rotation);
+            bodyTrans.y += 3;
+            gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, _Body.GetComponent<Transform>().rotation);
+            bodyTrans.x -= 3;
+            gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, _Body.GetComponent<Transform>().rotation);
+            bodyTrans.y -= 3;
+            gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, _Body.GetComponent<Transform>().rotation);
+
+            bodyTrans.x += 9;
+            gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, _Body.GetComponent<Transform>().rotation);
+            bodyTrans.y += 3;
+            gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, _Body.GetComponent<Transform>().rotation);
+            bodyTrans.x += 3;
+            gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, _Body.GetComponent<Transform>().rotation);
+            bodyTrans.y -= 3;
+            gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, _Body.GetComponent<Transform>().rotation);
+
+            bodyTrans.x -= 6f;
+            bodyTrans.y += 2;
+            for(int i = 0; i < 4; i++)
+            {
+                bodyTrans.y += 3;
+                gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, _Body.GetComponent<Transform>().rotation);
+            }
+
+
+            NetworkServer.Spawn(gameObject);
+
+        }
 
         public static void UpdateLocalPlayer()
         {
