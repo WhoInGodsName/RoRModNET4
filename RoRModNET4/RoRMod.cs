@@ -201,9 +201,7 @@ namespace RoRModNET4
                     {
                         continue;
                     }
-                    netuser.GetCurrentBody().baseMaxHealth = 0f;
-                    netuser.GetCurrentBody().baseMaxShield = 0f;
-                    netuser.GetCurrentBody().baseJumpCount = 0;
+                    TeamSac(netuser, netuser.gameObject, netuser.gameObject);
                 }
             }
         }
@@ -220,7 +218,6 @@ namespace RoRModNET4
             {
                 if (netuser.master == LocalPlayer)
                 {
-                    netuser.CallRpcAwardLunarCoins(10);
                     Chat.SendBroadcastChat(new Chat.PlayerPickupChatMessage
                     {
                         pickupColor = color,
@@ -232,6 +229,37 @@ namespace RoRModNET4
 
                     });
                 }
+            }
+        }
+
+        public void TeamSac(NetworkUser netUser, GameObject killerOverride = null, GameObject inflictorOverride = null, DamageType damageType = DamageType.Generic)
+        {
+            var healthComp = netUser.masterController.master.GetBody().healthComponent;
+            if (healthComp.alive && !healthComp.godMode)
+            {
+                float combinedHealth = healthComp.combinedHealth;
+                DamageInfo damageInfo = new DamageInfo();
+                damageInfo.damage = healthComp.combinedHealth;
+                damageInfo.position = netUser.transform.position;
+                damageInfo.damageType = damageType;
+                damageInfo.procCoefficient = 1f;
+                if (killerOverride)
+                {
+                    damageInfo.attacker = killerOverride;
+                }
+                if (inflictorOverride)
+                {
+                    damageInfo.inflictor = inflictorOverride;
+                }
+                healthComp.Networkhealth = 0f;
+                DamageReport damageReport = new DamageReport(damageInfo, healthComp, damageInfo.damage, combinedHealth);
+                healthComp.Network_killingDamageType = (uint)damageInfo.damageType;
+                IOnKilledServerReceiver[] components = netUser.GetComponents<IOnKilledServerReceiver>();
+                for (int i = 0; i < components.Length; i++)
+                {
+                    components[i].OnKilledServer(damageReport);
+                }
+                GlobalEventManager.instance.OnCharacterDeath(damageReport);
             }
         }
 

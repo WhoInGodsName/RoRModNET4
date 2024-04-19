@@ -32,7 +32,8 @@ namespace RoRModNET4
             "Some dog shit I think?",
             "You.  He is carrying the crap out of this team.",
             "A small pigeon",
-            "That sexy ass ;)"
+            "That sexy ass ;)",
+            "Inconveniently oversized coconut"
         };
 
         public string[] bodyArray = new string[] {
