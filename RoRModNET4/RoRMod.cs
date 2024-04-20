@@ -51,7 +51,7 @@ namespace RoRModNET4
 
             
 
-            Render.Begin("Risk of Tears 0.0.3", 4f, 1f, 180f, 670f, 10f, 20f, 2f);
+            Render.Begin("Risk of Tears 1.0.0", 4f, 1f, 180f, 700f, 10f, 20f, 2f);
             //GUI.Box(new Rect(0f, 0f, 300f, 500f), godMode.ToString());
             if (Render.Button("Toggle Firerate")) { maxFireRate = true; }
             Render.Label(_godModeLabel);
@@ -66,15 +66,18 @@ namespace RoRModNET4
             Render.Label("Unlock All");
             if (Render.Button("Unlock")) { UnlockAll(); }
             Render.Label("Spawn Body");
-            if (Render.Button("LunarGolemBody")) { LocalPlayer.CallCmdRespawn("LunarGolemBody"); }
+            if (Render.Button("SuperRoboBallBossBody")) { LocalPlayer.CallCmdRespawn("SuperRoboBallBossBody"); }
             if (Render.Button("MegaDroneBody")) { LocalPlayer.CallCmdRespawn("MegaDroneBody"); }
-            if (Render.Button("GrandParentBody")) { LocalPlayer.CallCmdRespawn("GrandParentBody"); }
+            if (Render.Button("BrotherHurtBody")) { LocalPlayer.CallCmdRespawn("BrotherHurtBody"); }
             if (Render.Button("GolemBody")) { LocalPlayer.CallCmdRespawn("GolemBody"); }
-            if (Render.Button("Engineer")) { LocalPlayer.CallCmdRespawn("EngiBody"); }
+            if (Render.Button("ElectricWormBody")) { LocalPlayer.CallCmdRespawn("ElectricWormBody"); }
+            if (Render.Button("HereticBody")) { LocalPlayer.CallCmdRespawn("HereticBody"); }
             if (Render.Button("Huntress")) { LocalPlayer.CallCmdRespawn("HuntressBody"); }
-            if (Render.Button("Captain")) { LocalPlayer.CallCmdRespawn("CaptainBody"); }
+            if (Render.Button("GravekeeperBody")) { LocalPlayer.CallCmdRespawn("GravekeeperBody"); }
+            if (Render.Button("BrotherBody")) { LocalPlayer.CallCmdRespawn("BrotherBody"); }
             if (Render.Button("Loader")) { LocalPlayer.CallCmdRespawn("LoaderBody"); }
-            Render.Label(">Coins / Exp <");
+            
+            Render.Label(">Coins / Exp / Misc<");
             if (Render.Button("+10 Lunar coins"))
             {
                 foreach (NetworkUser netuser in GetAllNetworkPlayers())
@@ -86,16 +89,16 @@ namespace RoRModNET4
                 }
             }
             if (Render.Button("+10k Money")) { LocalPlayer.GiveMoney(10000); }
-            if (Render.Button("Pickup Cock")) { Broadcastpickup(1); }
+            if (Render.Button("Pickup Message")) { Broadcastpickup(1); }
+            if (Render.Button("Spawn Prefab"))
+            {
+                PrefabDraw draw = new PrefabDraw();
+                draw.Draw(_Body.GetComponent<Transform>().position, _Body.GetComponent<Transform>().rotation, "JellyfishBody");
+            }
             Render.Label("> Team <");
             if (Render.Button("Sacrifice team </3"))
             {
                 SacrificeTeam();
-            }
-            if (Render.Button("Spawn prefab"))
-            {
-                PrefabDraw draw = new PrefabDraw();
-                draw.Draw(_Body.GetComponent<Transform>().position, _Body.GetComponent<Transform>().rotation, "JellyfishBody");
             }
             if (Render.Button("Spawn prefab on team"))
             {
@@ -127,7 +130,7 @@ namespace RoRModNET4
                 if (godMode == true)
                 {
                     _Body.healthComponent.godMode = true;
-                    _Body.healthComponent.health = 999999999999f;
+                    _Body.healthComponent.health = 9999f;
                 }
                 else if (godMode == false)
                 {
