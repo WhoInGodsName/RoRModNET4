@@ -1,15 +1,19 @@
 ﻿using HG;
 using RoR2;
+using RoR2.ContentManagement;
+using RoR2.ExpansionManagement;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Networking;
 using UnityEngine.Rendering;
 using UnityEngine.UIElements;
 using static RoR2.SpawnCard;
+using static UnityEngine.Rendering.DebugUI;
 
 namespace RoRModNET4
 {
@@ -21,8 +25,11 @@ namespace RoRModNET4
         TeamManager _TeamManager;
         TeleporterInteraction _Teleporter;
         CharacterVars characterVars = new CharacterVars();
-        
+        FriendlyFireManager.FriendlyFireMode friendlyFireMode;
+
+
         NetworkWriter _Writer;
+        string nameToken = "";
 
         //Toggles for menu
         bool maxFireRate = false;
@@ -40,7 +47,12 @@ namespace RoRModNET4
         string noReloadLabel = "> No Cooldown Timer <";
         bool noSkillReload = false;
 
+        //Friendly fire
+        bool ff = false;
+
         bool spawnOnTeam = false;
+        bool debugger = false;
+        bool getVals = false;
 
 
         public void OnGUI()
@@ -51,9 +63,16 @@ namespace RoRModNET4
 
             
 
-            Render.Begin("Risk of Tears 1.0.0", 4f, 1f, 180f, 700f, 10f, 20f, 2f);
-            //GUI.Box(new Rect(0f, 0f, 300f, 500f), godMode.ToString());
-            if (Render.Button("Toggle Firerate")) { maxFireRate = true; }
+            Render.Begin("Risk of Tears 1.0.1", 4f, 1f, 180f, 750f, 10f, 20f, 2f);
+
+            if (debugger)
+            {
+                GUI.Box(new Rect(10f, 1000f, 600f, 600f), "");
+                GUI.Label(new Rect(10f, 1000f, 600f, 600f), "DEBUGGER");
+                GUI.Label(new Rect(20f, 1010f, 600f, 600f), nameToken);
+            }
+            
+            if (Render.Button("Toggle Firerate")) { maxFireRate = !maxFireRate; }
             Render.Label(_godModeLabel);
             if (Render.Button("Toggle Godmode")) { godMode = !godMode; }
             Render.Label(_speedLabel);
@@ -68,7 +87,7 @@ namespace RoRModNET4
             Render.Label("Spawn Body");
             if (Render.Button("SuperRoboBallBossBody")) { LocalPlayer.CallCmdRespawn("SuperRoboBallBossBody"); }
             if (Render.Button("MegaDroneBody")) { LocalPlayer.CallCmdRespawn("MegaDroneBody"); }
-            if (Render.Button("BrotherHurtBody")) { LocalPlayer.CallCmdRespawn("BrotherHurtBody"); }
+            if (Render.Button("EnforcerBody")) { LocalPlayer.CallCmdRespawn("EnforcerBody"); }
             if (Render.Button("GolemBody")) { LocalPlayer.CallCmdRespawn("GolemBody"); }
             if (Render.Button("ElectricWormBody")) { LocalPlayer.CallCmdRespawn("ElectricWormBody"); }
             if (Render.Button("HereticBody")) { LocalPlayer.CallCmdRespawn("HereticBody"); }
@@ -78,13 +97,13 @@ namespace RoRModNET4
             if (Render.Button("Loader")) { LocalPlayer.CallCmdRespawn("LoaderBody"); }
             
             Render.Label(">Coins / Exp / Misc<");
-            if (Render.Button("+10 Lunar coins"))
+            if (Render.Button("+1000 Lunar coins"))
             {
                 foreach (NetworkUser netuser in GetAllNetworkPlayers())
                 {
                     if (netuser.master == LocalPlayer)
                     {
-                        netuser.CallRpcAwardLunarCoins(10);
+                        netuser.CallRpcAwardLunarCoins(1000);
                     }
                 }
             }
@@ -95,6 +114,7 @@ namespace RoRModNET4
                 PrefabDraw draw = new PrefabDraw();
                 draw.Draw(_Body.GetComponent<Transform>().position, _Body.GetComponent<Transform>().rotation, "JellyfishBody");
             }
+            if (Render.Button("Debugger")) { debugger = !debugger; getVals = true; }
             Render.Label("> Team <");
             if (Render.Button("Sacrifice team </3"))
             {
@@ -104,6 +124,11 @@ namespace RoRModNET4
             {
                 spawnOnTeam = !spawnOnTeam;
             }
+            if(Render.Button("Deduct Lunar coins"))
+            {
+                ff = !ff;
+            }
+            
         }
         public void Start()
         {
@@ -116,16 +141,22 @@ namespace RoRModNET4
         public void Update()
         {
             UpdateLocalPlayer();
+            ExpansionInfo();
+            PlaySoundOnPlayer();
 
-            
             _Body = LocalPlayer.GetBody();
+
             if (_Body)
             {
                 characterVars.baseSpeed = _Body.baseMoveSpeed;
 
                 if (maxFireRate == true)
                 {
-                    _Body.baseAttackSpeed = 50f;
+                    _Body.baseAttackSpeed = 200f;
+                }
+                else
+                {
+                    _Body.baseAttackSpeed = 1f;
                 }
                 if (godMode == true)
                 {
@@ -174,6 +205,15 @@ namespace RoRModNET4
                 {
                     SpawnOnTeam("JellyfishBody");
                 }
+                if(ff == true)
+                {
+                    friendlyFireMode = FriendlyFireManager.FriendlyFireMode.FriendlyFire;
+                }
+                else
+                {
+                    friendlyFireMode = FriendlyFireManager.FriendlyFireMode.Off;
+                }
+
             }
             
             _NetworkUser = FindObjectOfType<NetworkUser>();
@@ -296,8 +336,53 @@ namespace RoRModNET4
                 }
                 Vector3 bodyTrans = Vector3.zero;
                 bodyTrans = netuser.GetCurrentBody().GetComponent<Transform>().position;
-                GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, _Body.GetComponent<Transform>().rotation);
+                GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, netuser.GetComponent<Transform>().rotation);
                 NetworkServer.Spawn(gameObject);
+                gameObject.GetComponent<MeshRenderer>().enabled = false;
+
+            }
+        }
+
+        public void ExpansionInfo()
+        {
+            ExpansionDef[] x = ContentManager.expansionDefs;
+            if (getVals == true)
+            {
+                nameToken = "";
+                foreach (ReadOnlyContentPack ROCP in ContentManager.allLoadedContentPacks)
+                {
+                    nameToken += $"\nROCP identifier: {ROCP.identifier}\n" +
+                        $"ROCP hashcode: {ROCP.GetHashCode()}\n" +
+                        $"ROCP is valid: {ROCP.isValid}\n";
+                }
+                getVals = false;
+            }
+        }
+
+        public void PlaySoundOnPlayer()
+        {
+            NetworkInstanceId bodyInstanceId;
+            GameObject resolvedBodyInstance;
+            NetworkIdentity component = LocalPlayer.gameObject.GetComponent<NetworkIdentity>();
+            if (component)
+            {
+                bodyInstanceId = component.netId;
+                resolvedBodyInstance = LocalPlayer.gameObject;
+                Util.PlaySound("Play_item_proc_extraLife", resolvedBodyInstance);
+            }     
+        }
+        
+        public void NoLunarCoins()
+        {
+            foreach (NetworkUser netuser in NetworkUser.FindObjectsOfType(typeof(NetworkUser)))
+            {
+                if (netuser.masterController.master == LocalPlayer)
+                {
+                    continue;
+                }
+
+                netuser.CallRpcDeductLunarCoins(10);
+                
             }
         }
 
@@ -309,5 +394,6 @@ namespace RoRModNET4
             }
             LocalPlayer = LocalUserManager.GetFirstLocalUser().cachedMasterController.master;
         }
+
     }
 }
