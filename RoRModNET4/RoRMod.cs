@@ -31,6 +31,9 @@ namespace RoRModNET4
         NetworkWriter _Writer;
         string nameToken = "";
 
+        //Toggle menu
+        bool menuToggle = false;
+
         //Toggles for menu
         bool maxFireRate = false;
         bool godMode = false;
@@ -63,72 +66,85 @@ namespace RoRModNET4
 
             
 
-            Render.Begin("Risk of Tears 1.0.1", 4f, 1f, 180f, 750f, 10f, 20f, 2f);
-
-            if (debugger)
-            {
-                GUI.Box(new Rect(10f, 1000f, 600f, 600f), "");
-                GUI.Label(new Rect(10f, 1000f, 600f, 600f), "DEBUGGER");
-                GUI.Label(new Rect(20f, 1010f, 600f, 600f), nameToken);
-            }
             
-            if (Render.Button("Toggle Firerate")) { maxFireRate = !maxFireRate; }
-            Render.Label(_godModeLabel);
-            if (Render.Button("Toggle Godmode")) { godMode = !godMode; }
-            Render.Label(_speedLabel);
-            if (Render.Button("+ Speed")) { increaseSpeed = true;  }
-            if (Render.Button("- Speed")) { decreaseSpeed = true; }
-            Render.Label(_infJumpLabel);
-            if (Render.Button("Toggle Inf Jump")) { jumpCount = !jumpCount; }
-            Render.Label(noReloadLabel);
-            if (Render.Button("Toggle No Cooldown")) { noSkillReload = !noSkillReload; }
-            Render.Label("Unlock All");
-            if (Render.Button("Unlock")) { UnlockAll(); }
-            Render.Label("Spawn Body");
-            if (Render.Button("SuperRoboBallBossBody")) { LocalPlayer.CallCmdRespawn("SuperRoboBallBossBody"); }
-            if (Render.Button("MegaDroneBody")) { LocalPlayer.CallCmdRespawn("MegaDroneBody"); }
-            if (Render.Button("EnforcerBody")) { LocalPlayer.CallCmdRespawn("EnforcerBody"); }
-            if (Render.Button("GolemBody")) { LocalPlayer.CallCmdRespawn("GolemBody"); }
-            if (Render.Button("ElectricWormBody")) { LocalPlayer.CallCmdRespawn("ElectricWormBody"); }
-            if (Render.Button("HereticBody")) { LocalPlayer.CallCmdRespawn("HereticBody"); }
-            if (Render.Button("Huntress")) { LocalPlayer.CallCmdRespawn("HuntressBody"); }
-            if (Render.Button("GravekeeperBody")) { LocalPlayer.CallCmdRespawn("GravekeeperBody"); }
-            if (Render.Button("BrotherBody")) { LocalPlayer.CallCmdRespawn("BrotherBody"); }
-            if (Render.Button("Loader")) { LocalPlayer.CallCmdRespawn("LoaderBody"); }
-            
-            Render.Label(">Coins / Exp / Misc<");
-            if (Render.Button("+1000 Lunar coins"))
+            if(menuToggle == true)
             {
-                foreach (NetworkUser netuser in GetAllNetworkPlayers())
+                Render.Begin("Risk of Tears 1.0.1", 4f, 1f, 180f, 790f, 10f, 20f, 2f);
+                if (debugger)
                 {
-                    if (netuser.master == LocalPlayer)
+                    GUI.Box(new Rect(10f, 1000f, 600f, 600f), "");
+                    GUI.Label(new Rect(10f, 1000f, 600f, 600f), "DEBUGGER");
+                    GUI.Label(new Rect(20f, 1010f, 600f, 600f), nameToken);
+                }
+
+                if (Render.Button("Toggle Firerate")) { maxFireRate = !maxFireRate; }
+                Render.Label(_godModeLabel);
+                if (Render.Button("Toggle Godmode")) { godMode = !godMode; }
+                Render.Label(_speedLabel);
+                if (Render.Button("+ Speed")) { increaseSpeed = true; }
+                if (Render.Button("- Speed")) { decreaseSpeed = true; }
+                Render.Label(_infJumpLabel);
+                if (Render.Button("Toggle Inf Jump")) { jumpCount = !jumpCount; }
+                Render.Label(noReloadLabel);
+                if (Render.Button("Toggle No Cooldown")) { noSkillReload = !noSkillReload; }
+                Render.Label("Unlock All");
+                if (Render.Button("Unlock")) { UnlockAll(); }
+                Render.Label("Spawn Body");
+                if (Render.Button("SuperRoboBallBossBody")) { LocalPlayer.CallCmdRespawn("SuperRoboBallBossBody"); }
+                if (Render.Button("MegaDroneBody")) { LocalPlayer.CallCmdRespawn("MegaDroneBody"); }
+                if (Render.Button("EnforcerBody")) { LocalPlayer.CallCmdRespawn("EnforcerBody"); }
+                if (Render.Button("GolemBody")) { LocalPlayer.CallCmdRespawn("GolemBody"); }
+                if (Render.Button("ElectricWormBody")) { LocalPlayer.CallCmdRespawn("ElectricWormBody"); }
+                if (Render.Button("HereticBody")) { LocalPlayer.CallCmdRespawn("HereticBody"); }
+                if (Render.Button("Huntress")) { LocalPlayer.CallCmdRespawn("HuntressBody"); }
+                if (Render.Button("GravekeeperBody")) { LocalPlayer.CallCmdRespawn("GravekeeperBody"); }
+                if (Render.Button("BrotherBody")) { LocalPlayer.CallCmdRespawn("BrotherBody"); }
+                if (Render.Button("Loader")) { LocalPlayer.CallCmdRespawn("LoaderBody"); }
+
+                Render.Label(">Coins / Exp / Misc<");
+                if (Render.Button("+1000 Lunar coins"))
+                {
+                    foreach (NetworkUser netuser in GetAllNetworkPlayers())
                     {
-                        netuser.CallRpcAwardLunarCoins(1000);
+                        if (netuser.master == LocalPlayer)
+                        {
+                            netuser.CallRpcAwardLunarCoins(1000);
+                        }
                     }
                 }
+                if (Render.Button("+10k Money")) { LocalPlayer.GiveMoney(10000); }
+                if (Render.Button("Pickup Message")) { Broadcastpickup(1); }
+                if (Render.Button("Spawn Prefab"))
+                {
+                    PrefabDraw draw = new PrefabDraw();
+                    draw.Draw(_Body.GetComponent<Transform>().position, _Body.GetComponent<Transform>().rotation, "JellyfishBody");
+                }
+                if (Render.Button("Debugger")) { debugger = !debugger; getVals = true; }
+                Render.Label("> Team <");
+                if (Render.Button("Sacrifice team </3"))
+                {
+                    SacrificeTeam();
+                }
+                if (Render.Button("Spawn prefab on team"))
+                {
+                    spawnOnTeam = !spawnOnTeam;
+                }
+                if (Render.Button("Deduct Lunar coins"))
+                {
+                    NoLunarCoins();
+                }
+                Render.Label("> menu <");
+                if (Render.Button("Toggle Menu")) { menuToggle = !menuToggle; }
             }
-            if (Render.Button("+10k Money")) { LocalPlayer.GiveMoney(10000); }
-            if (Render.Button("Pickup Message")) { Broadcastpickup(1); }
-            if (Render.Button("Spawn Prefab"))
+            else
             {
-                PrefabDraw draw = new PrefabDraw();
-                draw.Draw(_Body.GetComponent<Transform>().position, _Body.GetComponent<Transform>().rotation, "JellyfishBody");
-            }
-            if (Render.Button("Debugger")) { debugger = !debugger; getVals = true; }
-            Render.Label("> Team <");
-            if (Render.Button("Sacrifice team </3"))
-            {
-                SacrificeTeam();
-            }
-            if (Render.Button("Spawn prefab on team"))
-            {
-                spawnOnTeam = !spawnOnTeam;
-            }
-            if(Render.Button("Deduct Lunar coins"))
-            {
-                ff = !ff;
+                Render.Begin("Risk of Tears 1.0.1", 4f, 1f, 180f, 50f, 10f, 20f, 2f);
+                
+                if (Render.Button("Toggle Menu")) { menuToggle = !menuToggle; }
             }
             
+
+
         }
         public void Start()
         {
