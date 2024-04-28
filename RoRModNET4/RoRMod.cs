@@ -69,7 +69,7 @@ namespace RoRModNET4
             
             if(menuToggle == true)
             {
-                Render.Begin("Risk of Tears 1.0.1", 4f, 1f, 180f, 790f, 10f, 20f, 2f);
+                Render.Begin("Risk of Tears 1.0.3", 4f, 1f, 180f, 790f, 10f, 20f, 2f);
                 if (debugger)
                 {
                     GUI.Box(new Rect(10f, 1000f, 600f, 600f), "");
@@ -138,7 +138,7 @@ namespace RoRModNET4
             }
             else
             {
-                Render.Begin("Risk of Tears 1.0.1", 4f, 1f, 180f, 50f, 10f, 20f, 2f);
+                Render.Begin("Risk of Tears 1.0.3", 4f, 1f, 180f, 50f, 10f, 20f, 2f);
                 
                 if (Render.Button("Toggle Menu")) { menuToggle = !menuToggle; }
             }
@@ -158,7 +158,6 @@ namespace RoRModNET4
         {
             UpdateLocalPlayer();
             ExpansionInfo();
-            PlaySoundOnPlayer();
 
             _Body = LocalPlayer.GetBody();
 
@@ -219,7 +218,7 @@ namespace RoRModNET4
                 }
                 if(spawnOnTeam == true)
                 {
-                    SpawnOnTeam("JellyfishBody");
+                    SpawnOnTeam("ExplosivePotDestructibleBody");
                 }
                 if(ff == true)
                 {
@@ -353,8 +352,9 @@ namespace RoRModNET4
                 Vector3 bodyTrans = Vector3.zero;
                 bodyTrans = netuser.GetCurrentBody().GetComponent<Transform>().position;
                 GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, netuser.GetComponent<Transform>().rotation);
+                //gameObject.GetComponent<MeshRenderer>().enabled = false;
                 NetworkServer.Spawn(gameObject);
-                gameObject.GetComponent<MeshRenderer>().enabled = false;
+                
 
             }
         }
@@ -373,19 +373,6 @@ namespace RoRModNET4
                 }
                 getVals = false;
             }
-        }
-
-        public void PlaySoundOnPlayer()
-        {
-            NetworkInstanceId bodyInstanceId;
-            GameObject resolvedBodyInstance;
-            NetworkIdentity component = LocalPlayer.gameObject.GetComponent<NetworkIdentity>();
-            if (component)
-            {
-                bodyInstanceId = component.netId;
-                resolvedBodyInstance = LocalPlayer.gameObject;
-                Util.PlaySound("Play_item_proc_extraLife", resolvedBodyInstance);
-            }     
         }
         
         public void NoLunarCoins()
