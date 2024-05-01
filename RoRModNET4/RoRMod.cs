@@ -22,7 +22,7 @@ namespace RoRModNET4
         static CharacterBody _Body;
         public static CharacterMaster LocalPlayer = null;
         NetworkUser _NetworkUser;
-        TeamManager _TeamManager;
+        TeamManager _TeamManager = new TeamManager(LocalPlayer);
         TeleporterInteraction _Teleporter;
         CharacterVars characterVars = new CharacterVars();
         FriendlyFireManager.FriendlyFireMode friendlyFireMode;
@@ -64,11 +64,13 @@ namespace RoRModNET4
             string _infJumpLabel = $"Inf Jump: {jumpCount}";
             string _godModeLabel = $"Godmode: {godMode}";
 
-            
 
+            
             
             if(menuToggle == true)
             {
+                _TeamManager.DisplayTeam();
+
                 Render.Begin("Risk of Tears 1.0.3", 4f, 1f, 180f, 790f, 10f, 20f, 2f);
                 if (debugger)
                 {
@@ -142,15 +144,14 @@ namespace RoRModNET4
                 
                 if (Render.Button("Toggle Menu")) { menuToggle = !menuToggle; }
             }
-            
 
+            
 
         }
         public void Start()
         {
             UpdateLocalPlayer();
             _NetworkUser = FindObjectOfType<NetworkUser>();
-            _TeamManager = FindObjectOfType<TeamManager>();
             _Teleporter = FindObjectOfType<TeleporterInteraction>();
         }
 
@@ -158,6 +159,8 @@ namespace RoRModNET4
         {
             UpdateLocalPlayer();
             ExpansionInfo();
+            _TeamManager.GetTeam();
+            _TeamManager.GetLocalPlayer(LocalPlayer);
 
             _Body = LocalPlayer.GetBody();
 
