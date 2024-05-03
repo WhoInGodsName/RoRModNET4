@@ -159,8 +159,9 @@ namespace RoRModNET4
         {
             UpdateLocalPlayer();
             ExpansionInfo();
-            _TeamManager.GetTeam();
             _TeamManager.GetLocalPlayer(LocalPlayer);
+            _TeamManager.GetTeam();
+            
 
             _Body = LocalPlayer.GetBody();
 

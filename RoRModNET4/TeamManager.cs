@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace RoRModNET4
 {
@@ -12,6 +13,7 @@ namespace RoRModNET4
     {
         private List<NetworkUser> networkUsers = new List<NetworkUser>();
         private CharacterMaster localPlayer;
+        private NetworkUser localNetUser;
         public TeamManager(CharacterMaster _localPlayer)
         {
             localPlayer = _localPlayer;
@@ -37,14 +39,14 @@ namespace RoRModNET4
                 {
                     SacrificeUser(networkUsers[i], networkUsers[i].gameObject, networkUsers[i].gameObject);
                 }
-                if (GUI.Button(buttonPos2, "Teleport to"))
-                {
-                    Vector3 targetPos = networkUsers[i].GetCurrentBody().transform.position;
-                    localPlayer.GetBody().transform.position = targetPos;
-                }
-                if (GUI.Button(buttonPos3, "Respawn"))
+                
+                if (GUI.Button(buttonPos2, "Respawn"))
                 {
                     networkUsers[i].master.RespawnExtraLife();
+                }
+                if (GUI.Button(buttonPos3, "Kick"))
+                {
+                    this.localNetUser.CallCmdSendConsoleCommand("kick_steam", new string[] { (networkUsers[i].Network_id.steamId).ToString() });
                 }
 
 
@@ -61,11 +63,11 @@ namespace RoRModNET4
             }
             foreach (NetworkUser netuser in NetworkUser.FindObjectsOfType(typeof(NetworkUser)))
             {
-                /*if (netuser.masterController.master == LocalPlayer)
-                {
-                    continue;
-                }*/
                 this.networkUsers.Add(netuser);
+                if(netuser.master == localPlayer)
+                {
+                    this.localNetUser = netuser;
+                }
             }
         }
         public void GetLocalPlayer(CharacterMaster _localPlayer)
