@@ -1,4 +1,5 @@
 ﻿using HG;
+using Newtonsoft.Json.Linq;
 using RoR2;
 using RoR2.ContentManagement;
 using RoR2.ExpansionManagement;
@@ -57,6 +58,7 @@ namespace RoRModNET4
         bool debugger = false;
         bool getVals = false;
 
+        Vector2 scrollPosition = Vector2.zero;
 
         public void OnGUI()
         {
@@ -65,13 +67,12 @@ namespace RoRModNET4
             string _godModeLabel = $"Godmode: {godMode}";
 
 
-            
-            
-            if(menuToggle == true)
+            if (menuToggle == true)
             {
+
                 _TeamManager.DisplayTeam();
 
-                Render.Begin("Risk of Tears 1.0.3", 4f, 1f, 180f, 790f, 10f, 20f, 2f);
+                Render.Begin("Risk of Tears 1.1.0", 4f, 1f, 180f, 790f, 10f, 20f, 2f);
                 if (debugger)
                 {
                     GUI.Box(new Rect(10f, 1000f, 600f, 600f), "");
@@ -93,7 +94,7 @@ namespace RoRModNET4
                 if (Render.Button("Unlock")) { UnlockAll(); }
                 Render.Label("Spawn Body");
                 if (Render.Button("SuperRoboBallBossBody")) { LocalPlayer.CallCmdRespawn("SuperRoboBallBossBody"); }
-                if (Render.Button("MegaDroneBody")) { LocalPlayer.CallCmdRespawn("MegaDroneBody"); }
+                if (Render.Button("VoidSurvivorBody")) { LocalPlayer.CallCmdRespawn("VoidSurvivorBody"); }
                 if (Render.Button("EnforcerBody")) { LocalPlayer.CallCmdRespawn("EnforcerBody"); }
                 if (Render.Button("GolemBody")) { LocalPlayer.CallCmdRespawn("GolemBody"); }
                 if (Render.Button("ElectricWormBody")) { LocalPlayer.CallCmdRespawn("ElectricWormBody"); }
@@ -137,10 +138,22 @@ namespace RoRModNET4
                 }
                 Render.Label("> menu <");
                 if (Render.Button("Toggle Menu")) { menuToggle = !menuToggle; }
+
+
+                GUI.Label(new Rect(150, 800, 100, 20), "ITEMS");
+                scrollPosition = GUI.BeginScrollView(new Rect(0, 820, 300, 100), scrollPosition, new Rect(0, 0, 300, 2200));
+                GUI.Label(new Rect(0, 200, 300, 2200), "");
+                for (int i = 0; i < characterVars.itemNames.Length; i++)
+                {
+                    GUI.Label(new Rect(10, 22 * i, 100, 20), characterVars.itemNames[i]);
+                    if(GUI.Button(new Rect(100, 22 * i, 70, 20), "Add")) { LocalPlayer.inventory.GiveItemString(characterVars.itemNames[i], 1);  }
+                    if(GUI.Button(new Rect(180, 22 * i, 70, 20), "Remove")) { LocalPlayer.inventory.GiveItemString(characterVars.itemNames[i], -1); }
+                }
+                GUI.EndScrollView();
             }
             else
             {
-                Render.Begin("Risk of Tears 1.0.3", 4f, 1f, 180f, 50f, 10f, 20f, 2f);
+                Render.Begin("Risk of Tears 1.1.0", 4f, 1f, 180f, 50f, 10f, 20f, 2f);
                 
                 if (Render.Button("Toggle Menu")) { menuToggle = !menuToggle; }
             }
@@ -161,6 +174,7 @@ namespace RoRModNET4
             ExpansionInfo();
             _TeamManager.GetLocalPlayer(LocalPlayer);
             _TeamManager.GetTeam();
+
             
 
             _Body = LocalPlayer.GetBody();

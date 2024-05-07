@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using UnityEngine;
 
 namespace RoRModNET4
@@ -134,6 +135,13 @@ namespace RoRModNET4
             DrawLine(Point, new Vector2(Point.x, Point.y + height), color, thickness);
             DrawLine(new Vector2(Point.x + width, Point.y + height), new Vector2(Point.x + width, Point.y), color, thickness);
             DrawLine(new Vector2(Point.x + width, Point.y + height), new Vector2(Point.x, Point.y + height), color, thickness);
+        }
+
+        
+        public static void DrawScrollBox(string[] values)
+        {
+            
+            
         }
     }
 }
