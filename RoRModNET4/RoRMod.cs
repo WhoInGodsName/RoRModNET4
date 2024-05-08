@@ -34,6 +34,9 @@ namespace RoRModNET4
 
         //Toggle menu
         bool menuToggle = false;
+        bool teamMenu = false;
+        bool bodyMenu = false;
+        bool itemMenu = false;
 
         //Toggles for menu
         bool maxFireRate = false;
@@ -59,6 +62,7 @@ namespace RoRModNET4
         bool getVals = false;
 
         Vector2 scrollPosition = Vector2.zero;
+        Vector2 scrollPosition2 = Vector2.zero;
 
         public void OnGUI()
         {
@@ -69,10 +73,13 @@ namespace RoRModNET4
 
             if (menuToggle == true)
             {
+                if(teamMenu == true)
+                {
+                    _TeamManager.DisplayTeam();
+                }
+                
 
-                _TeamManager.DisplayTeam();
-
-                Render.Begin("Risk of Tears 1.1.0", 4f, 1f, 180f, 790f, 10f, 20f, 2f);
+                Render.Begin("Risk of Tears 1.1.0", 4f, 1f, 180f, 680f, 10f, 20f, 2f);
                 if (debugger)
                 {
                     GUI.Box(new Rect(10f, 1000f, 600f, 600f), "");
@@ -93,29 +100,21 @@ namespace RoRModNET4
                 Render.Label("Unlock All");
                 if (Render.Button("Unlock")) { UnlockAll(); }
                 Render.Label("Spawn Body");
-                if (Render.Button("SuperRoboBallBossBody")) { LocalPlayer.CallCmdRespawn("SuperRoboBallBossBody"); }
-                if (Render.Button("VoidSurvivorBody")) { LocalPlayer.CallCmdRespawn("VoidSurvivorBody"); }
-                if (Render.Button("EnforcerBody")) { LocalPlayer.CallCmdRespawn("EnforcerBody"); }
-                if (Render.Button("GolemBody")) { LocalPlayer.CallCmdRespawn("GolemBody"); }
-                if (Render.Button("ElectricWormBody")) { LocalPlayer.CallCmdRespawn("ElectricWormBody"); }
-                if (Render.Button("HereticBody")) { LocalPlayer.CallCmdRespawn("HereticBody"); }
-                if (Render.Button("Huntress")) { LocalPlayer.CallCmdRespawn("HuntressBody"); }
-                if (Render.Button("GravekeeperBody")) { LocalPlayer.CallCmdRespawn("GravekeeperBody"); }
-                if (Render.Button("BrotherBody")) { LocalPlayer.CallCmdRespawn("BrotherBody"); }
-                if (Render.Button("Loader")) { LocalPlayer.CallCmdRespawn("LoaderBody"); }
+                if (Render.Button("Toggle Body Menu")) { bodyMenu = !bodyMenu; }
 
                 Render.Label(">Coins / Exp / Misc<");
-                if (Render.Button("+1000 Lunar coins"))
+                if (Render.Button("+10k Lunar coins"))
                 {
                     foreach (NetworkUser netuser in GetAllNetworkPlayers())
                     {
                         if (netuser.master == LocalPlayer)
                         {
-                            netuser.CallRpcAwardLunarCoins(1000);
+                            netuser.CallRpcAwardLunarCoins(10000);
                         }
                     }
                 }
                 if (Render.Button("+10k Money")) { LocalPlayer.GiveMoney(10000); }
+                if (Render.Button("Toggle Item Menu")) { itemMenu = !itemMenu; }
                 if (Render.Button("Pickup Message")) { Broadcastpickup(1); }
                 if (Render.Button("Spawn Prefab"))
                 {
@@ -124,32 +123,46 @@ namespace RoRModNET4
                 }
                 if (Render.Button("Debugger")) { debugger = !debugger; getVals = true; }
                 Render.Label("> Team <");
-                if (Render.Button("Sacrifice team </3"))
+                if (Render.Button("Toggle Team Menu"))
                 {
-                    SacrificeTeam();
+                    teamMenu = !teamMenu;
                 }
                 if (Render.Button("Spawn prefab on team"))
                 {
                     spawnOnTeam = !spawnOnTeam;
                 }
-                if (Render.Button("Deduct Lunar coins"))
-                {
-                    NoLunarCoins();
-                }
                 Render.Label("> menu <");
                 if (Render.Button("Toggle Menu")) { menuToggle = !menuToggle; }
 
 
-                GUI.Label(new Rect(150, 800, 100, 20), "ITEMS");
-                scrollPosition = GUI.BeginScrollView(new Rect(0, 820, 300, 100), scrollPosition, new Rect(0, 0, 300, 2200));
-                GUI.Label(new Rect(0, 200, 300, 2200), "");
-                for (int i = 0; i < characterVars.itemNames.Length; i++)
+                if(itemMenu == true)
                 {
-                    GUI.Label(new Rect(10, 22 * i, 100, 20), characterVars.itemNames[i]);
-                    if(GUI.Button(new Rect(100, 22 * i, 70, 20), "Add")) { LocalPlayer.inventory.GiveItemString(characterVars.itemNames[i], 1);  }
-                    if(GUI.Button(new Rect(180, 22 * i, 70, 20), "Remove")) { LocalPlayer.inventory.GiveItemString(characterVars.itemNames[i], -1); }
+                    GUI.Label(new Rect(120, 700, 100, 20), "ITEMS");
+                    scrollPosition = GUI.BeginScrollView(new Rect(0, 720, 300, 100), scrollPosition, new Rect(0, 0, 300, 2200));
+                    GUI.Label(new Rect(0, 200, 300, 2200), "");
+                    for (int i = 0; i < characterVars.itemNames.Length; i++)
+                    {
+                        GUI.Label(new Rect(10, 22 * i, 100, 20), characterVars.itemNames[i]);
+                        if (GUI.Button(new Rect(100, 22 * i, 70, 20), "Add")) { LocalPlayer.inventory.GiveItemString(characterVars.itemNames[i], 1); }
+                        if (GUI.Button(new Rect(180, 22 * i, 70, 20), "Remove")) { LocalPlayer.inventory.GiveItemString(characterVars.itemNames[i], -1); }
+                    }
                 }
+                
                 GUI.EndScrollView();
+
+                if(bodyMenu == true)
+                {
+                    GUI.Label(new Rect(210, 140, 100, 20), "BODIES");
+                    scrollPosition2 = GUI.BeginScrollView(new Rect(210, 160, 200, 100), scrollPosition2, new Rect(0, 0, 200, 3200));
+                    GUI.Label(new Rect(0, 200, 200, 3200), "");
+                    for (int i = 0; i < characterVars.bodyArray.Length; i++)
+                    {
+                        if (GUI.Button(new Rect(10, 22 * i, 150, 20), characterVars.bodyArray[i])) { LocalPlayer.CallCmdRespawn(characterVars.bodyArray[i]); }
+                    }
+                    GUI.EndScrollView();
+
+                }
+                
             }
             else
             {
@@ -390,20 +403,6 @@ namespace RoRModNET4
                         $"ROCP is valid: {ROCP.isValid}\n";
                 }
                 getVals = false;
-            }
-        }
-        
-        public void NoLunarCoins()
-        {
-            foreach (NetworkUser netuser in NetworkUser.FindObjectsOfType(typeof(NetworkUser)))
-            {
-                if (netuser.masterController.master == LocalPlayer)
-                {
-                    continue;
-                }
-
-                netuser.CallRpcDeductLunarCoins(10);
-                
             }
         }
 
