@@ -1,18 +1,14 @@
-﻿using HG;
-using Newtonsoft.Json.Linq;
+﻿
 using RoR2;
 using RoR2.ContentManagement;
 using RoR2.ExpansionManagement;
-using System;
-using System.Collections.Generic;
+using System.Threading;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using UnityEngine;
-using UnityEngine.Events;
+
 using UnityEngine.Networking;
-using UnityEngine.Rendering;
-using UnityEngine.UIElements;
+
 using static RoR2.SpawnCard;
 using static UnityEngine.Rendering.DebugUI;
 
@@ -47,7 +43,7 @@ namespace RoRModNET4
         bool decreaseSpeed = false;
 
         //Player jump
-        
+
         bool jumpCount = false;
 
         //No skill reload time  
@@ -80,12 +76,12 @@ namespace RoRModNET4
                 
 
                 Render.Begin("Risk of Tears 1.1.0", 4f, 1f, 180f, 680f, 10f, 20f, 2f);
-                if (debugger)
+                /*if (debugger)
                 {
                     GUI.Box(new Rect(10f, 1000f, 600f, 600f), "");
                     GUI.Label(new Rect(10f, 1000f, 600f, 600f), "DEBUGGER");
                     GUI.Label(new Rect(20f, 1010f, 600f, 600f), nameToken);
-                }
+                }*/
 
                 if (Render.Button("Toggle Firerate")) { maxFireRate = !maxFireRate; }
                 Render.Label(_godModeLabel);
@@ -121,7 +117,7 @@ namespace RoRModNET4
                     PrefabDraw draw = new PrefabDraw();
                     draw.Draw(_Body.GetComponent<Transform>().position, _Body.GetComponent<Transform>().rotation, "JellyfishBody");
                 }
-                if (Render.Button("Debugger")) { debugger = !debugger; getVals = true; }
+                //if (Render.Button("Debugger")) { debugger = !debugger; getVals = true; }
                 Render.Label("> Team <");
                 if (Render.Button("Toggle Team Menu"))
                 {
@@ -172,19 +168,18 @@ namespace RoRModNET4
             }
 
             
+            
 
         }
         public void Start()
         {
             UpdateLocalPlayer();
-            _NetworkUser = FindObjectOfType<NetworkUser>();
             _Teleporter = FindObjectOfType<TeleporterInteraction>();
         }
 
         public void Update()
         {
             UpdateLocalPlayer();
-            ExpansionInfo();
             _TeamManager.GetLocalPlayer(LocalPlayer);
             _TeamManager.GetTeam();
 
@@ -251,18 +246,8 @@ namespace RoRModNET4
                 {
                     SpawnOnTeam("ExplosivePotDestructibleBody");
                 }
-                if(ff == true)
-                {
-                    friendlyFireMode = FriendlyFireManager.FriendlyFireMode.FriendlyFire;
-                }
-                else
-                {
-                    friendlyFireMode = FriendlyFireManager.FriendlyFireMode.Off;
-                }
 
             }
-            
-            _NetworkUser = FindObjectOfType<NetworkUser>();
         }
 
         public void UnlockAll()
@@ -383,8 +368,8 @@ namespace RoRModNET4
                 Vector3 bodyTrans = Vector3.zero;
                 bodyTrans = netuser.GetCurrentBody().GetComponent<Transform>().position;
                 GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(toSpawn, bodyTrans, netuser.GetComponent<Transform>().rotation);
-                //gameObject.GetComponent<MeshRenderer>().enabled = false;
                 NetworkServer.Spawn(gameObject);
+                //UnityEngine.Object.Destroy(gameObject);
                 
 
             }

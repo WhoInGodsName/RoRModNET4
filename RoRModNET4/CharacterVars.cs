@@ -41,7 +41,8 @@ namespace RoRModNET4
             "Misplaced Condom Wrapper",
             "Disco Ball of Shame",
             "Lube-Soaked Feather Duster",
-            "Bootylicious Spanking Paddle"
+            "Bootylicious Spanking Paddle",
+            "Mistress Kandy's bean dip fart fest"
 
         };
 

@@ -48,10 +48,6 @@ namespace RoRModNET4
                 {
                     this.localNetUser.CallCmdSendConsoleCommand("kick_steam", new string[] { (networkUsers[i].Network_id.steamId).ToString() });
                 }
-
-
-
-
             }
         }
         public void GetTeam()
