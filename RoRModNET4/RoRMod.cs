@@ -167,29 +167,29 @@ namespace RoRModNET4
                 if (Render.Button("Toggle Menu")) { menuToggle = !menuToggle; }
             }
 
-            
-            
+ 
 
         }
         public void Start()
         {
+            useGUILayout = false;
             UpdateLocalPlayer();
             _Teleporter = FindObjectOfType<TeleporterInteraction>();
         }
 
-        public void Update()
+        public void FixedUpdate()
         {
             UpdateLocalPlayer();
-            _TeamManager.GetLocalPlayer(LocalPlayer);
-            _TeamManager.GetTeam();
-
             
-
             _Body = LocalPlayer.GetBody();
 
+            if(teamMenu == true)
+            {
+                _TeamManager.GetLocalPlayer(LocalPlayer);
+                _TeamManager.GetTeam();
+            }
             if (_Body)
             {
-                characterVars.baseSpeed = _Body.baseMoveSpeed;
 
                 if (maxFireRate == true)
                 {
