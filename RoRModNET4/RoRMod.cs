@@ -54,15 +54,18 @@ namespace RoRModNET4
         bool ff = false;
 
         bool spawnOnTeam = false;
-        bool debugger = false;
         bool getVals = false;
+
+        //ESP
+        bool itemESP = false;
+        bool portalESP = false;
 
         Vector2 scrollPosition = Vector2.zero;
         Vector2 scrollPosition2 = Vector2.zero;
 
         public void OnGUI()
         {
-            string _speedLabel = $"Character Speed: {characterVars.baseSpeed.ToString()}";
+            string _speedLabel = $"Character Speed: {characterVars.baseSpeed}";
             string _infJumpLabel = $"Inf Jump: {jumpCount}";
             string _godModeLabel = $"Godmode: {godMode}";
 
@@ -75,7 +78,7 @@ namespace RoRModNET4
                 }
                 
 
-                Render.Begin("Risk of Tears 1.1.0", 4f, 1f, 180f, 680f, 10f, 20f, 2f);
+                Render.Begin("Risk of Tears 1.1.2", 4f, 1f, 180f, 680f, 10f, 20f, 2f);
                 /*if (debugger)
                 {
                     GUI.Box(new Rect(10f, 1000f, 600f, 600f), "");
@@ -117,6 +120,12 @@ namespace RoRModNET4
                     PrefabDraw draw = new PrefabDraw();
                     draw.Draw(_Body.GetComponent<Transform>().position, _Body.GetComponent<Transform>().rotation, "JellyfishBody");
                 }
+
+                Render.Label(">ESP<");
+                if (Render.Button("Items"))
+                {
+                    itemESP = !itemESP;
+                }
                 //if (Render.Button("Debugger")) { debugger = !debugger; getVals = true; }
                 Render.Label("> Team <");
                 if (Render.Button("Toggle Team Menu"))
@@ -127,6 +136,7 @@ namespace RoRModNET4
                 {
                     spawnOnTeam = !spawnOnTeam;
                 }
+                
                 Render.Label("> menu <");
                 if (Render.Button("Toggle Menu")) { menuToggle = !menuToggle; }
 
@@ -143,7 +153,13 @@ namespace RoRModNET4
                         if (GUI.Button(new Rect(180, 22 * i, 70, 20), "Remove")) { LocalPlayer.inventory.GiveItemString(characterVars.itemNames[i], -1); }
                     }
                 }
-                
+
+                if (itemESP == true)
+                {
+                    RenderInteractables();
+                }
+
+
                 GUI.EndScrollView();
 
                 if(bodyMenu == true)
@@ -159,12 +175,14 @@ namespace RoRModNET4
 
                 }
                 
+                
             }
             else
             {
-                Render.Begin("Risk of Tears 1.1.0", 4f, 1f, 180f, 50f, 10f, 20f, 2f);
+                Render.Begin("Risk of Tears 1.1.2", 4f, 1f, 180f, 100f, 10f, 20f, 2f);
                 
                 if (Render.Button("Toggle Menu")) { menuToggle = !menuToggle; }
+                if (Render.Button("Unload Menu")) { Loader.Unload(); }
             }
 
  
@@ -188,9 +206,11 @@ namespace RoRModNET4
                 _TeamManager.GetLocalPlayer(LocalPlayer);
                 _TeamManager.GetTeam();
             }
+
+            
             if (_Body)
             {
-
+                characterVars.baseSpeed = _Body.baseMoveSpeed;
                 if (maxFireRate == true)
                 {
                     _Body.baseAttackSpeed = 200f;
@@ -398,6 +418,27 @@ namespace RoRModNET4
                 return;
             }
             LocalPlayer = LocalUserManager.GetFirstLocalUser().cachedMasterController.master;
+        }
+
+        //Item ESP is from NicksMenuV2 https://www.unknowncheats.me/forum/downloads.php?do=file&id=34094
+        public void RenderInteractables()
+        {
+            foreach (PurchaseInteraction purchaseInteraction in UnityEngine.Object.FindObjectsOfType(typeof(PurchaseInteraction)))
+            {
+                bool available = purchaseInteraction.available;
+                if (available)
+                {
+                    Vector3 vector = Camera.main.WorldToScreenPoint(purchaseInteraction.transform.position);
+                    bool flag = (double)vector.z > 0.01;
+                    if (flag)
+                    {
+                        LegacyResourcesAPI.Load<GameObject>("Prefabs/CostHologramContent");
+                        GUI.color = Color.yellow;
+                        string displayName = purchaseInteraction.GetDisplayName();
+                        GUI.Label(new Rect(vector.x, (float)Screen.height - vector.y, 80f, 50f), displayName);
+                    }
+                }
+            }
         }
 
     }
