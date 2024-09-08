@@ -11,6 +11,7 @@ using UnityEngine.Networking;
 
 using static RoR2.SpawnCard;
 using static UnityEngine.Rendering.DebugUI;
+using System.Collections.Generic;
 
 namespace RoRModNET4
 {
@@ -18,9 +19,7 @@ namespace RoRModNET4
     {
         static CharacterBody _Body;
         public static CharacterMaster LocalPlayer = null;
-        NetworkUser _NetworkUser;
         TeamManager _TeamManager = new TeamManager(LocalPlayer);
-        TeleporterInteraction _Teleporter;
         CharacterVars characterVars = new CharacterVars();
         FriendlyFireManager.FriendlyFireMode friendlyFireMode;
 
@@ -62,6 +61,9 @@ namespace RoRModNET4
 
         Vector2 scrollPosition = Vector2.zero;
         Vector2 scrollPosition2 = Vector2.zero;
+
+        int renderCount = 5000;
+        List<PurchaseInteraction> itemList = new List<PurchaseInteraction>();
 
         public void OnGUI()
         {
@@ -156,7 +158,25 @@ namespace RoRModNET4
 
                 if (itemESP == true)
                 {
-                    RenderInteractables();
+                    renderCount += 1;
+                    if (renderCount >= 5000)
+                    {
+                        itemList = new List<PurchaseInteraction>();
+                        renderCount = 0;
+                        itemList = LoadInteractables();
+                    }
+                    try
+                    {
+                        RenderInteractables(itemList);
+                    }
+                    catch
+                    {
+                        itemList = new List<PurchaseInteraction>();
+                        itemList = LoadInteractables();
+                        renderCount = 5000;
+                    }
+                    
+                    
                 }
 
 
@@ -165,8 +185,8 @@ namespace RoRModNET4
                 if(bodyMenu == true)
                 {
                     GUI.Label(new Rect(210, 140, 100, 20), "BODIES");
-                    scrollPosition2 = GUI.BeginScrollView(new Rect(210, 160, 200, 100), scrollPosition2, new Rect(0, 0, 200, 3200));
-                    GUI.Label(new Rect(0, 200, 200, 3200), "");
+                    scrollPosition2 = GUI.BeginScrollView(new Rect(210, 160, 200, 100), scrollPosition2, new Rect(0, 0, 200, 3600));
+                    GUI.Label(new Rect(0, 200, 200, 3600), "");
                     for (int i = 0; i < characterVars.bodyArray.Length; i++)
                     {
                         if (GUI.Button(new Rect(10, 22 * i, 150, 20), characterVars.bodyArray[i])) { LocalPlayer.CallCmdRespawn(characterVars.bodyArray[i]); }
@@ -192,9 +212,9 @@ namespace RoRModNET4
         {
             useGUILayout = false;
             UpdateLocalPlayer();
-            _Teleporter = FindObjectOfType<TeleporterInteraction>();
         }
 
+        int teamReloadCount = 2000;
         public void FixedUpdate()
         {
             UpdateLocalPlayer();
@@ -204,7 +224,12 @@ namespace RoRModNET4
             if(teamMenu == true)
             {
                 _TeamManager.GetLocalPlayer(LocalPlayer);
-                _TeamManager.GetTeam();
+                if(teamReloadCount >= 2000)
+                {
+                    _TeamManager.GetTeam();
+                    teamReloadCount = 0;
+                }
+                teamReloadCount += 1;
             }
 
             
@@ -395,6 +420,14 @@ namespace RoRModNET4
             }
         }
 
+        public void Teleporter()
+        {
+            TeleporterInteraction tele = FindObjectOfType<TeleporterInteraction>();
+            
+            tele.shouldAttemptToSpawnGoldshoresPortal = true;
+            tele.AddShrineStack();
+        }
+
         public void ExpansionInfo()
         {
             ExpansionDef[] x = ContentManager.expansionDefs;
@@ -421,24 +454,35 @@ namespace RoRModNET4
         }
 
         //Item ESP is from NicksMenuV2 https://www.unknowncheats.me/forum/downloads.php?do=file&id=34094
-        public void RenderInteractables()
+        public List<PurchaseInteraction> LoadInteractables()
         {
+            List<PurchaseInteraction> itemList = new List<PurchaseInteraction>();
             foreach (PurchaseInteraction purchaseInteraction in UnityEngine.Object.FindObjectsOfType(typeof(PurchaseInteraction)))
             {
                 bool available = purchaseInteraction.available;
                 if (available)
                 {
-                    Vector3 vector = Camera.main.WorldToScreenPoint(purchaseInteraction.transform.position);
-                    bool flag = (double)vector.z > 0.01;
-                    if (flag)
-                    {
-                        LegacyResourcesAPI.Load<GameObject>("Prefabs/CostHologramContent");
-                        GUI.color = Color.yellow;
-                        string displayName = purchaseInteraction.GetDisplayName();
-                        GUI.Label(new Rect(vector.x, (float)Screen.height - vector.y, 80f, 50f), displayName);
-                    }
+                    itemList.Add(purchaseInteraction);
+                    
                 }
             }
+            return itemList;
+        }
+
+        public void RenderInteractables(List<PurchaseInteraction> purchaseInteraction)
+        {
+            for(int i = 0; i < purchaseInteraction.Count(); i++)
+            {
+                Vector3 vector = Camera.main.WorldToScreenPoint(purchaseInteraction[i].transform.position);
+                bool flag = (double)vector.z > 0.01;
+                if (flag)
+                {
+                    GUI.color = Color.yellow;
+                    string displayName = purchaseInteraction[i].GetDisplayName() + " - " + purchaseInteraction[i].cost;
+                    GUI.Label(new Rect(vector.x, (float)Screen.height - vector.y, 80f, 50f), displayName);
+                }
+            }
+            
         }
 
     }

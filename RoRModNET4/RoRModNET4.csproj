@@ -93,7 +93,8 @@
     <Reference Include="Rewired_Windows">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Risk of Rain 2\Risk of Rain 2_Data\Managed\Rewired_Windows.dll</HintPath>
     </Reference>
-    <Reference Include="RoR2">
+    <Reference Include="RoR2, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Risk of Rain 2\Risk of Rain 2_Data\Managed\RoR2.dll</HintPath>
     </Reference>
     <Reference Include="SimpleJSON">
