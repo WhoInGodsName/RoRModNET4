@@ -62,7 +62,7 @@ namespace RoRModNET4
         Vector2 scrollPosition = Vector2.zero;
         Vector2 scrollPosition2 = Vector2.zero;
 
-        int renderCount = 5000;
+        int renderCount = 2000;
         List<PurchaseInteraction> itemList = new List<PurchaseInteraction>();
 
         public void OnGUI()
@@ -80,7 +80,7 @@ namespace RoRModNET4
                 }
                 
 
-                Render.Begin("Risk of Tears 1.1.2", 4f, 1f, 180f, 680f, 10f, 20f, 2f);
+                Render.Begin("Risk of Tears 1.1.3", 4f, 1f, 180f, 680f, 10f, 20f, 2f);
                 /*if (debugger)
                 {
                     GUI.Box(new Rect(10f, 1000f, 600f, 600f), "");
@@ -100,8 +100,7 @@ namespace RoRModNET4
                 if (Render.Button("Toggle No Cooldown")) { noSkillReload = !noSkillReload; }
                 Render.Label("Unlock All");
                 if (Render.Button("Unlock")) { UnlockAll(); }
-                Render.Label("Spawn Body");
-                if (Render.Button("Toggle Body Menu")) { bodyMenu = !bodyMenu; }
+                
 
                 Render.Label(">Coins / Exp / Misc<");
                 if (Render.Button("+10k Lunar coins"))
@@ -115,7 +114,7 @@ namespace RoRModNET4
                     }
                 }
                 if (Render.Button("+10k Money")) { LocalPlayer.GiveMoney(10000); }
-                if (Render.Button("Toggle Item Menu")) { itemMenu = !itemMenu; }
+                
                 if (Render.Button("Pickup Message")) { Broadcastpickup(1); }
                 if (Render.Button("Spawn Prefab"))
                 {
@@ -129,37 +128,41 @@ namespace RoRModNET4
                     itemESP = !itemESP;
                 }
                 //if (Render.Button("Debugger")) { debugger = !debugger; getVals = true; }
-                Render.Label("> Team <");
-                if (Render.Button("Toggle Team Menu"))
-                {
-                    teamMenu = !teamMenu;
-                }
+                
                 if (Render.Button("Spawn prefab on team"))
                 {
                     spawnOnTeam = !spawnOnTeam;
                 }
                 
-                Render.Label("> menu <");
+                Render.Label("> Menus <");
+                if (Render.Button("Toggle Team Menu")) { teamMenu = !teamMenu; }
+                if (Render.Button("Toggle Body Menu")) { bodyMenu = !bodyMenu; }
+                if (Render.Button("Toggle Item Menu")) { itemMenu = !itemMenu; }
                 if (Render.Button("Toggle Menu")) { menuToggle = !menuToggle; }
+
 
 
                 if(itemMenu == true)
                 {
                     GUI.Label(new Rect(120, 700, 100, 20), "ITEMS");
+                    GUI.Label(new Rect(200, 700, 100, 20), "Currently held");
                     scrollPosition = GUI.BeginScrollView(new Rect(0, 720, 300, 100), scrollPosition, new Rect(0, 0, 300, 2200));
                     GUI.Label(new Rect(0, 200, 300, 2200), "");
                     for (int i = 0; i < characterVars.itemNames.Length; i++)
                     {
+                        GUI.color = Color.white;
                         GUI.Label(new Rect(10, 22 * i, 100, 20), characterVars.itemNames[i]);
                         if (GUI.Button(new Rect(100, 22 * i, 70, 20), "Add")) { LocalPlayer.inventory.GiveItemString(characterVars.itemNames[i], 1); }
                         if (GUI.Button(new Rect(180, 22 * i, 70, 20), "Remove")) { LocalPlayer.inventory.GiveItemString(characterVars.itemNames[i], -1); }
+                        GUI.color = Color.yellow;
+                        GUI.Label(new Rect(250, 22 * i, 50, 20), (LocalPlayer.inventory.GetItemCount(ItemCatalog.FindItemIndex(characterVars.itemNames[i]))).ToString());
                     }
                 }
 
                 if (itemESP == true)
                 {
                     renderCount += 1;
-                    if (renderCount >= 5000)
+                    if (renderCount >= 2000)
                     {
                         itemList = new List<PurchaseInteraction>();
                         renderCount = 0;
@@ -173,7 +176,7 @@ namespace RoRModNET4
                     {
                         itemList = new List<PurchaseInteraction>();
                         itemList = LoadInteractables();
-                        renderCount = 5000;
+                        renderCount = 2000;
                     }
                     
                     
@@ -199,7 +202,7 @@ namespace RoRModNET4
             }
             else
             {
-                Render.Begin("Risk of Tears 1.1.2", 4f, 1f, 180f, 100f, 10f, 20f, 2f);
+                Render.Begin("Risk of Tears 1.1.3", 4f, 1f, 180f, 100f, 10f, 20f, 2f);
                 
                 if (Render.Button("Toggle Menu")) { menuToggle = !menuToggle; }
                 if (Render.Button("Unload Menu")) { Loader.Unload(); }
@@ -478,7 +481,7 @@ namespace RoRModNET4
                 if (flag)
                 {
                     GUI.color = Color.yellow;
-                    string displayName = purchaseInteraction[i].GetDisplayName() + " - " + purchaseInteraction[i].cost;
+                    string displayName = purchaseInteraction[i].GetDisplayName() + " - $" + purchaseInteraction[i].cost;
                     GUI.Label(new Rect(vector.x, (float)Screen.height - vector.y, 80f, 50f), displayName);
                 }
             }
