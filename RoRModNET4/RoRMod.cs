@@ -78,7 +78,6 @@ namespace RoRModNET4
                 {
                     _TeamManager.DisplayTeam();
                 }
-                
 
                 Render.Begin("Risk of Tears 1.1.3", 4f, 1f, 180f, 680f, 10f, 20f, 2f);
                 /*if (debugger)
@@ -486,7 +485,6 @@ namespace RoRModNET4
                 }
             }
             
-        }
-
+        }        
     }
 }

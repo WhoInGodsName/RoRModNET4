@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -14,6 +15,9 @@ namespace RoRModNET4
         private List<NetworkUser> networkUsers = new List<NetworkUser>();
         private CharacterMaster localPlayer;
         private NetworkUser localNetUser;
+        //private CharacterVars characterVars;
+
+        Vector2 scrollPosition2 = Vector2.zero;
         public TeamManager(CharacterMaster _localPlayer)
         {
             localPlayer = _localPlayer;
@@ -26,13 +30,14 @@ namespace RoRModNET4
                 return;
             }
 
-            GUI.Box(new Rect(200, 1, (networkUsers.Count * 150), 100), "");
+            GUI.Box(new Rect(200, 1, (networkUsers.Count * 150), 130), "");
 
             for (int i = 0; i < networkUsers.Count; i++)
             {
                 Rect buttonPos = new Rect((230 + (i * 150)), 20, 100, 20);
                 Rect buttonPos2 = new Rect((230 + (i * 150)), 42, 100, 20);
                 Rect buttonPos3 = new Rect((230 + (i * 150)), 64, 100, 20);
+                Rect buttonPos4 = new Rect((230 + (i * 150)), 86, 100, 20);
                 Rect vecPos = new Rect((230 + (i * 150)), 1, 100, 20);
                 GUI.Label(vecPos, networkUsers[i].userName);
                 if (GUI.Button(buttonPos, "Sacrifice </3"))
@@ -47,6 +52,10 @@ namespace RoRModNET4
                 if (GUI.Button(buttonPos3, "Kick"))
                 {
                     this.localNetUser.CallCmdSendConsoleCommand("kick_steam", new string[] { (networkUsers[i].Network_id.steamId).ToString() });
+                }
+                if (GUI.Button(buttonPos4, "Turret Time"))
+                {
+                    networkUsers[i].master.CallCmdRespawn("MissileDroneBody");
                 }
             }
         }
@@ -98,6 +107,18 @@ namespace RoRModNET4
                     components[i].OnKilledServer(damageReport);
                 }
                 GlobalEventManager.instance.OnCharacterDeath(damageReport);
+            }
+        }
+
+        private void TeamTurretGo()
+        {
+            for (int i = 0; i < this.networkUsers.Count(); i++)
+            {
+                if (networkUsers[i].masterController.master == this.localPlayer)
+                {
+                    continue;
+                }
+                this.networkUsers[i].master.CallCmdRespawn("EngiTurretBody");
             }
         }
     }
