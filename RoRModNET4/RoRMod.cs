@@ -57,10 +57,16 @@ namespace RoRModNET4
 
         //ESP
         bool itemESP = false;
-        bool portalESP = false;
+        //bool portalESP = false;
 
         Vector2 scrollPosition = Vector2.zero;
         Vector2 scrollPosition2 = Vector2.zero;
+
+        //Item menu vars
+        CharacterMaster chosenUser;
+        bool loadUsers = false;
+        int itemMenuColourInt = 0;
+        Color itemMenuColour;
 
         int renderCount = 2000;
         List<PurchaseInteraction> itemList = new List<PurchaseInteraction>();
@@ -79,7 +85,7 @@ namespace RoRModNET4
                     _TeamManager.DisplayTeam();
                 }
 
-                Render.Begin("Risk of Tears 1.1.3", 4f, 1f, 180f, 680f, 10f, 20f, 2f);
+                Render.Begin("Risk of Tears 1.1.4", 4f, 1f, 180f, 600f, 10f, 20f, 2f);
                 /*if (debugger)
                 {
                     GUI.Box(new Rect(10f, 1000f, 600f, 600f), "");
@@ -102,13 +108,13 @@ namespace RoRModNET4
                 
 
                 Render.Label(">Coins / Exp / Misc<");
-                if (Render.Button("+10k Lunar coins"))
+                if (Render.Button("+100k Lunar coins"))
                 {
                     foreach (NetworkUser netuser in GetAllNetworkPlayers())
                     {
                         if (netuser.master == LocalPlayer)
                         {
-                            netuser.CallRpcAwardLunarCoins(10000);
+                            netuser.CallRpcAwardLunarCoins(100000);
                         }
                     }
                 }
@@ -136,26 +142,74 @@ namespace RoRModNET4
                 Render.Label("> Menus <");
                 if (Render.Button("Toggle Team Menu")) { teamMenu = !teamMenu; }
                 if (Render.Button("Toggle Body Menu")) { bodyMenu = !bodyMenu; }
-                if (Render.Button("Toggle Item Menu")) { itemMenu = !itemMenu; }
+                if (Render.Button("Toggle Item Menu")) { itemMenu = !itemMenu;  loadUsers = !loadUsers; }
                 if (Render.Button("Toggle Menu")) { menuToggle = !menuToggle; }
 
 
 
                 if(itemMenu == true)
                 {
+                    if(loadUsers == true)
+                    {
+                        _TeamManager.GetTeam();
+                        loadUsers = !loadUsers;
+                        if(_TeamManager.ReturnTeam() != null)
+                        {
+                            chosenUser = _TeamManager.ReturnTeam()[0].master;
+                        }
+                    }
                     GUI.Label(new Rect(120, 700, 100, 20), "ITEMS");
                     GUI.Label(new Rect(200, 700, 100, 20), "Currently held");
+
+                    List<NetworkUser> netUsers = _TeamManager.ReturnTeam();
+
+                    for (int i = 0; i < netUsers.Count(); i++) 
+                    {
+                        Rect buttonPos = new Rect((0 + (i * 120)), 650, 70, 20);
+
+                        switch (itemMenuColourInt)
+                        {
+                            case 1:
+                                
+                                itemMenuColour = GUI.color = Color.cyan;
+                                break;
+                            case 2:
+                                itemMenuColour = GUI.color = Color.grey;
+                                break;
+                            case 3:
+                                itemMenuColour = GUI.color = Color.green;
+                                break;
+                            case 4:
+                                itemMenuColour = GUI.color = Color.blue;
+                                break;
+                            default:
+                                itemMenuColour = GUI.color = Color.white;
+                                break;
+                        }
+
+                        if (GUI.Button(buttonPos, netUsers[i].userName))
+                        {
+                            chosenUser = netUsers[i].master;
+                            itemMenuColourInt = i;
+                        }
+                    }
+
                     scrollPosition = GUI.BeginScrollView(new Rect(0, 720, 300, 100), scrollPosition, new Rect(0, 0, 300, 2200));
                     GUI.Label(new Rect(0, 200, 300, 2200), "");
+
+                    
+
                     for (int i = 0; i < characterVars.itemNames.Length; i++)
                     {
-                        GUI.color = Color.white;
+                        GUI.color = itemMenuColour;
+                        
                         GUI.Label(new Rect(10, 22 * i, 100, 20), characterVars.itemNames[i]);
-                        if (GUI.Button(new Rect(100, 22 * i, 70, 20), "Add")) { LocalPlayer.inventory.GiveItemString(characterVars.itemNames[i], 1); }
-                        if (GUI.Button(new Rect(180, 22 * i, 70, 20), "Remove")) { LocalPlayer.inventory.GiveItemString(characterVars.itemNames[i], -1); }
+                        if (GUI.Button(new Rect(100, 22 * i, 70, 20), "Add")) { chosenUser.inventory.GiveItemString(characterVars.itemNames[i], 1); }
+                        if (GUI.Button(new Rect(180, 22 * i, 70, 20), "Remove")) { chosenUser.inventory.GiveItemString(characterVars.itemNames[i], -1); }
                         GUI.color = Color.yellow;
-                        GUI.Label(new Rect(250, 22 * i, 50, 20), (LocalPlayer.inventory.GetItemCount(ItemCatalog.FindItemIndex(characterVars.itemNames[i]))).ToString());
+                        GUI.Label(new Rect(250, 22 * i, 50, 20), (chosenUser.inventory.GetItemCount(ItemCatalog.FindItemIndex(characterVars.itemNames[i]))).ToString());
                     }
+                    //GUI.color = Color.white;
                 }
 
                 if (itemESP == true)
@@ -176,11 +230,8 @@ namespace RoRModNET4
                         itemList = new List<PurchaseInteraction>();
                         itemList = LoadInteractables();
                         renderCount = 2000;
-                    }
-                    
-                    
+                    }                                   
                 }
-
 
                 GUI.EndScrollView();
 
@@ -195,20 +246,18 @@ namespace RoRModNET4
                     }
                     GUI.EndScrollView();
 
-                }
-                
-                
+                }   
             }
             else
             {
-                Render.Begin("Risk of Tears 1.1.3", 4f, 1f, 180f, 100f, 10f, 20f, 2f);
+                                                                                                                
+            }
+            {
+                Render.Begin("Risk of Tears 1.1.4", 4f, 1f, 180f, 100f, 10f, 20f, 2f);
                 
                 if (Render.Button("Toggle Menu")) { menuToggle = !menuToggle; }
                 if (Render.Button("Unload Menu")) { Loader.Unload(); }
             }
-
- 
-
         }
         public void Start()
         {

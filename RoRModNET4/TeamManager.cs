@@ -38,6 +38,7 @@ namespace RoRModNET4
                 Rect buttonPos2 = new Rect((230 + (i * 150)), 42, 100, 20);
                 Rect buttonPos3 = new Rect((230 + (i * 150)), 64, 100, 20);
                 Rect buttonPos4 = new Rect((230 + (i * 150)), 86, 100, 20);
+                Rect buttonPos5 = new Rect((230 + (i * 150)), 108, 100, 20);
                 Rect vecPos = new Rect((230 + (i * 150)), 1, 100, 20);
                 GUI.Label(vecPos, networkUsers[i].userName);
                 if (GUI.Button(buttonPos, "Sacrifice </3"))
@@ -56,6 +57,12 @@ namespace RoRModNET4
                 if (GUI.Button(buttonPos4, "Turret Time"))
                 {
                     networkUsers[i].master.CallCmdRespawn("MissileDroneBody");
+                   
+                }
+                if (GUI.Button(buttonPos5, "Clear inv"))
+                {
+                    networkUsers[i].master.inventory.CleanInventory();
+
                 }
             }
         }
@@ -74,6 +81,10 @@ namespace RoRModNET4
                     this.localNetUser = netuser;
                 }
             }
+        }
+        public List<NetworkUser> ReturnTeam()
+        {
+            return this.networkUsers;
         }
         public void GetLocalPlayer(CharacterMaster _localPlayer)
         {

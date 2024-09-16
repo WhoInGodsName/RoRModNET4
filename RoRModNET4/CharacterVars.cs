@@ -293,6 +293,7 @@ namespace RoRModNET4
             "BonusGoldPackOnKill",
             "LaserTurbine",
             "LunarPrimaryReplacement",
+            "LunarPrimaryReplacement",
             "NovaOnLowHealth",
             "LunarTrinket"
         };
