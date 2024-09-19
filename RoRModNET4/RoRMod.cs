@@ -57,6 +57,7 @@ namespace RoRModNET4
 
         //ESP
         bool itemESP = false;
+        bool killMonsters = false;
         //bool portalESP = false;
 
         Vector2 scrollPosition = Vector2.zero;
@@ -126,6 +127,11 @@ namespace RoRModNET4
                     PrefabDraw draw = new PrefabDraw();
                     draw.Draw(_Body.GetComponent<Transform>().position, _Body.GetComponent<Transform>().rotation, "JellyfishBody");
                 }
+                if (Render.Button("Spawn prefab on team"))
+                {
+                    spawnOnTeam = !spawnOnTeam;
+                }
+
 
                 Render.Label(">ESP<");
                 if (Render.Button("Items"))
@@ -133,10 +139,9 @@ namespace RoRModNET4
                     itemESP = !itemESP;
                 }
                 //if (Render.Button("Debugger")) { debugger = !debugger; getVals = true; }
-                
-                if (Render.Button("Spawn prefab on team"))
+                if(Render.Button("Kill All Monsters"))
                 {
-                    spawnOnTeam = !spawnOnTeam;
+                    killMonsters = !killMonsters;
                 }
                 
                 Render.Label("> Menus <");
@@ -155,7 +160,7 @@ namespace RoRModNET4
                         loadUsers = !loadUsers;
                         if(_TeamManager.ReturnTeam() != null)
                         {
-                            chosenUser = _TeamManager.ReturnTeam()[0].master;
+                            chosenUser = LocalPlayer;
                         }
                     }
                     GUI.Label(new Rect(120, 700, 100, 20), "ITEMS");
@@ -163,15 +168,14 @@ namespace RoRModNET4
 
                     List<NetworkUser> netUsers = _TeamManager.ReturnTeam();
 
-                    for (int i = 0; i < netUsers.Count(); i++) 
+                    for (int i = netUsers.Count() - 1; i >= 0; i--) 
                     {
-                        Rect buttonPos = new Rect((0 + (i * 120)), 650, 70, 20);
+                        Rect buttonPos = new Rect((0 + (((netUsers.Count() - 1) - i) * 120)), 650, 70, 20);
 
                         switch (itemMenuColourInt)
                         {
                             case 1:
-                                
-                                itemMenuColour = GUI.color = Color.cyan;
+                                itemMenuColour = GUI.color = Color.white;
                                 break;
                             case 2:
                                 itemMenuColour = GUI.color = Color.grey;
@@ -183,7 +187,7 @@ namespace RoRModNET4
                                 itemMenuColour = GUI.color = Color.blue;
                                 break;
                             default:
-                                itemMenuColour = GUI.color = Color.white;
+                                itemMenuColour = GUI.color = Color.cyan;
                                 break;
                         }
 
@@ -209,7 +213,7 @@ namespace RoRModNET4
                         GUI.color = Color.yellow;
                         GUI.Label(new Rect(250, 22 * i, 50, 20), (chosenUser.inventory.GetItemCount(ItemCatalog.FindItemIndex(characterVars.itemNames[i]))).ToString());
                     }
-                    //GUI.color = Color.white;
+                    GUI.color = Color.white;
                 }
 
                 if (itemESP == true)
@@ -250,9 +254,6 @@ namespace RoRModNET4
             }
             else
             {
-                                                                                                                
-            }
-            {
                 Render.Begin("Risk of Tears 1.1.4", 4f, 1f, 180f, 100f, 10f, 20f, 2f);
                 
                 if (Render.Button("Toggle Menu")) { menuToggle = !menuToggle; }
@@ -265,7 +266,9 @@ namespace RoRModNET4
             UpdateLocalPlayer();
         }
 
-        int teamReloadCount = 2000;
+        int teamReloadCount = 500;
+        int killMonsterCount = 500;
+        MonsterManager monsterManager = new MonsterManager();
         public void FixedUpdate()
         {
             UpdateLocalPlayer();
@@ -275,12 +278,22 @@ namespace RoRModNET4
             if(teamMenu == true)
             {
                 _TeamManager.GetLocalPlayer(LocalPlayer);
-                if(teamReloadCount >= 2000)
+                if(teamReloadCount >= 500)
                 {
                     _TeamManager.GetTeam();
                     teamReloadCount = 0;
                 }
                 teamReloadCount += 1;
+            }
+            if(killMonsters == true)
+            {
+
+                if (killMonsterCount >= 500)
+                {
+                    monsterManager.KillMonsters(LocalPlayer);
+                    killMonsterCount = 0;
+                }
+                killMonsterCount += 1;
             }
 
             
@@ -346,9 +359,12 @@ namespace RoRModNET4
             }
         }
 
-        public void UnlockAll()
+        private void UnlockAll()
         {
             UserProfile userProfile = LocalUserManager.GetFirstLocalUser().userProfile;
+            userProfile.HasSurvivorUnlocked(SurvivorCatalog.FindSurvivorIndex("SniperBody"));
+            userProfile.HasSurvivorUnlocked(SurvivorCatalog.FindSurvivorIndex("ChefBody"));
+            userProfile.HasSurvivorUnlocked(SurvivorCatalog.FindSurvivorIndex("VoidSurvivorBody"));
 
             foreach (ItemIndex item in ItemCatalog.allItems)
             {
@@ -366,7 +382,7 @@ namespace RoRModNET4
             }
         }
 
-        public NetworkUser[] GetAllNetworkPlayers()
+        private NetworkUser[] GetAllNetworkPlayers()
         {
             int count = 0;
             NetworkUser[] netUsers = new NetworkUser[10];
@@ -379,22 +395,7 @@ namespace RoRModNET4
             return netUsers;
         }
 
-        public void SacrificeTeam()
-        {
-            foreach (NetworkUser netuser in NetworkUser.FindObjectsOfType(typeof(NetworkUser)))
-            {
-                if (netuser)
-                {
-                    if(netuser.masterController.master == LocalPlayer)
-                    {
-                        continue;
-                    }
-                    TeamSac(netuser, netuser.gameObject, netuser.gameObject);
-                }
-            }
-        }
-
-        public void Broadcastpickup(uint amount)
+        private void Broadcastpickup(uint amount)
         {
 
             var random = new System.Random();

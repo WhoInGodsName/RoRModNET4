@@ -82,6 +82,7 @@ namespace RoRModNET4
             "CommandoBody",
             "CommandoPerformanceTestBody",
             "CrocoBody",
+            "ChefBody",
             "DeathProjectile",
             "Drone1Body",
             "Drone2Body",
