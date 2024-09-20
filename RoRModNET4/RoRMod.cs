@@ -178,7 +178,7 @@ namespace RoRModNET4
                                 itemMenuColour = GUI.color = Color.white;
                                 break;
                             case 2:
-                                itemMenuColour = GUI.color = Color.grey;
+                                itemMenuColour = GUI.color = Color.magenta;
                                 break;
                             case 3:
                                 itemMenuColour = GUI.color = Color.green;

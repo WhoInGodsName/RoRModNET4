@@ -10,9 +10,6 @@ namespace RoRModNET4
 {
     internal class MonsterManager : MonoBehaviour
     {
-        TeamComponent teamComp = GameObject.FindObjectOfType<TeamComponent>();
-
-
         private IReadOnlyCollection<TeamComponent> GetMonsters()
         {          
             var monsters = TeamComponent.GetTeamMembers(TeamIndex.Monster);
@@ -22,7 +19,7 @@ namespace RoRModNET4
 
         public void KillMonsters(CharacterMaster localPlayer)
         {
-            var monsters = GetMonsters();
+            var monsters = this.GetMonsters();
             DamageInfo dmg = new DamageInfo()
             {
                 damage = 9999999999,

@@ -52,6 +52,7 @@ namespace RoRModNET4
                 }
                 if (GUI.Button(buttonPos3, "Kick"))
                 {
+                    //networkUsers[i].CallCmdSendConsoleCommand("parent_volume_music", new string[] {  "100" });
                     this.localNetUser.CallCmdSendConsoleCommand("kick_steam", new string[] { (networkUsers[i].Network_id.steamId).ToString() });
                 }
                 if (GUI.Button(buttonPos4, "Turret Time"))
